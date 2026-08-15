@@ -65,13 +65,14 @@
 
 
             <div class="dashboard-card">
-
                 <p>Study Time</p>
-
-                <h2>0h</h2>
-
+                
+                <h2>
+                    {{ total_study_hours }}h {{ remaining_minutes }}m
+                </h2>
+                
                 <span>
-                    This week
+                    Total study time
                 </span>
 
             </div>
@@ -115,6 +116,76 @@
 
     </div>
 
+    <div class="large-card">
+
+    <h2>Study Tracker</h2>
+
+    <form
+        action="{{ url_for('add_study_session') }}"
+        method="POST"
+        class="study-form"
+    >
+
+        <input
+            type="text"
+            name="subject"
+            placeholder="Subject"
+            required
+        >
+
+        <input
+            type="number"
+            name="duration"
+            placeholder="Duration in minutes"
+            min="1"
+            required
+        >
+
+        <button
+            type="submit"
+            class="primary-btn"
+        >
+            + Add Study Session
+        </button>
+
+    </form>
+    </div>
+
+    <div class="study-list">
+
+        {% if study_sessions %}
+
+            {% for session in study_sessions %}
+
+                <div class="study-item">
+
+                    <div>
+                        <strong>
+                            {{ session.subject }}
+                        </strong>
+
+                        <p>
+                            {{ session.duration }} minutes
+                        </p>
+                    </div>
+
+                    <span>
+                        📚
+                    </span>
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <p class="empty-state">
+                No study sessions yet.
+            </p>
+
+        {% endif %}
+
+    </div>
 
     <!-- Add Task Form -->
 

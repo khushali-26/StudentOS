@@ -30,6 +30,18 @@ class Task(db.Model):
         default=datetime.utcnow
     )
 
+class StudySession(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    subject = db.Column(db.String(100), nullable=False)
+
+    duration = db.Column(db.Integer, nullable=False)
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
 
 # -------------------------
 # Home
@@ -52,11 +64,26 @@ def dashboard():
         Task.created_at.desc()
     ).all()
 
-    return render_template(
-        "dashboard.html",
-        tasks=tasks
+    study_sessions = StudySession.query.order_by(
+        StudySession.created_at.desc()
+    ).all()
+
+    total_study_minutes = sum(
+        session.duration
+        for session in study_sessions
     )
 
+    total_study_hours = total_study_minutes // 60
+
+    remaining_minutes = total_study_minutes % 60
+
+    return render_template(
+        "dashboard.html",
+        tasks=tasks,
+        study_sessions=study_sessions,
+        total_study_hours=total_study_hours,
+        remaining_minutes=remaining_minutes
+    )
 
 # -------------------------
 # Add Task
@@ -82,6 +109,25 @@ def add_task():
 
     return redirect(url_for("dashboard"))
 
+@app.route("/study/add", methods=["POST"])
+def add_study_session():
+
+    subject = request.form.get("subject")
+
+    duration = request.form.get("duration")
+
+    if subject and duration:
+
+        session = StudySession(
+            subject=subject,
+            duration=int(duration)
+        )
+
+        db.session.add(session)
+
+        db.session.commit()
+
+    return redirect(url_for("dashboard"))
 
 # -------------------------
 # Complete Task
