@@ -64,6 +64,10 @@ def dashboard():
         Task.created_at.desc()
     ).all()
 
+    pending_tasks = Task.query.filter_by(
+        completed=False
+    ).count()
+
     study_sessions = StudySession.query.order_by(
         StudySession.created_at.desc()
     ).all()
@@ -81,6 +85,7 @@ def dashboard():
         "dashboard.html",
         tasks=tasks,
         study_sessions=study_sessions,
+        pending_tasks=pending_tasks,
         total_study_hours=total_study_hours,
         remaining_minutes=remaining_minutes
     )
