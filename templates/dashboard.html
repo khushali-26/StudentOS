@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Dashboard - StudentOS</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <nav class="navbar">
+
+        <div class="logo">
+            StudentOS
+        </div>
+
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/dashboard">Dashboard</a>
+        </div>
+
+        <button class="login-btn">
+            Login
+        </button>
+
+    </nav>
+
+
+    <main class="dashboard">
+
+        <div class="dashboard-header">
+
+            <div>
+                <p class="tagline">STUDENTOS DASHBOARD</p>
+
+                <h1>
+                    Good evening 👋
+                </h1>
+
+                <p class="dashboard-subtitle">
+                    Here's an overview of your academic progress.
+                </p>
+            </div>
+
+        </div>
+
+
+        <section class="dashboard-grid">
+
+            <div class="dashboard-card">
+
+                <p>Tasks</p>
+
+                <h2>0</h2>
+
+                <span>
+                    Tasks pending
+                </span>
+
+            </div>
+
+
+            <div class="dashboard-card">
+
+                <p>Study Time</p>
+
+                <h2>0h</h2>
+
+                <span>
+                    This week
+                </span>
+
+            </div>
+
+
+            <div class="dashboard-card">
+
+                <p>Attendance</p>
+
+                <h2>0%</h2>
+
+                <span>
+                    Overall attendance
+                </span>
+
+            </div>
+
+
+            <div class="dashboard-card">
+
+                <p>Goals</p>
+
+                <h2>0</h2>
+
+                <span>
+                    Active goals
+                </span>
+
+            </div>
+
+        </section>
+
+
+        <section class="dashboard-main">
+
+           <class="large-card">
+
+    <div class="section-header">
+
+        <h2>Tasks</h2>
+
+    </div>
+
+
+    <!-- Add Task Form -->
+
+    <form
+        action="{{ url_for('add_task') }}"
+        method="POST"
+        class="task-form"
+    >
+
+        <input
+            type="text"
+            name="title"
+            placeholder="Enter task title..."
+            required
+        >
+
+        <textarea
+            name="description"
+            placeholder="Description (optional)"
+        ></textarea>
+
+        <button
+            type="submit"
+            class="primary-btn"
+        >
+            + Add Task
+        </button>
+
+    </form>
+
+
+    <!-- Task List -->
+
+    <div class="task-list">
+
+        {% if tasks %}
+
+            {% for task in tasks %}
+
+                <div
+                    class="task-item
+                    {% if task.completed %}
+                        completed
+                    {% endif %}"
+                >
+
+                    <div class="task-info">
+
+                        <h3>
+                            {{ task.title }}
+                        </h3>
+
+                        {% if task.description %}
+
+                            <p>
+                                {{ task.description }}
+                            </p>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="task-actions">
+
+                        <a
+                            href="{{ url_for(
+                                'complete_task',
+                                task_id=task.id
+                            ) }}"
+                            class="task-complete"
+                        >
+                            {% if task.completed %}
+                                Undo
+                            {% else %}
+                                Complete
+                            {% endif %}
+                        </a>
+
+
+                        <a
+                            href="{{ url_for(
+                                'delete_task',
+                                task_id=task.id
+                            ) }}"
+                            class="task-delete"
+                        >
+                            Delete
+                        </a>
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <p class="empty-state">
+                No tasks yet. Add your first task!
+            </p>
+
+        {% endif %}
+
+    </div>
+
+            <div class="large-card">
+
+                <h2>
+                    Weekly Progress
+                </h2>
+
+                <div class="big-progress">
+                    <div class="big-progress-fill"></div>
+                </div>
+
+                <p class="empty-state">
+                    Start completing tasks to track your progress.
+                </p>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <footer>
+        <p>© 2026 StudentOS</p>
+    </footer>
+
+</body>
+</html>
