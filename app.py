@@ -67,6 +67,57 @@ class Attendance(db.Model):
         default=datetime.utcnow
     )
 
+def calculate_attendance_advice(attended, total, required=75):
+
+    if total == 0:
+        return {
+            "percentage": 0,
+            "status": "No data",
+            "message": "No attendance recorded yet."
+        }
+
+    percentage = (attended / total) * 100
+
+    if percentage < required:
+
+        classes_needed = 0
+
+        while (
+            (attended + classes_needed)
+            / (total + classes_needed)
+        ) * 100 < required:
+
+            classes_needed += 1
+
+        return {
+            "percentage": round(percentage, 1),
+            "status": "At Risk",
+            "message": (
+                f"Attend the next {classes_needed} "
+                f"class(es) to reach {required}%."
+            )
+        }
+
+    else:
+
+        classes_can_miss = 0
+
+        while (
+            attended
+            / (total + classes_can_miss + 1)
+        ) * 100 >= required:
+
+            classes_can_miss += 1
+
+        return {
+            "percentage": round(percentage, 1),
+            "status": "Safe",
+            "message": (
+                f"You can miss {classes_can_miss} "
+                f"class(es) and remain at or above {required}%."
+            )
+        }
+    
 # -------------------------
 # Home
 # -------------------------
@@ -109,25 +160,42 @@ def dashboard():
         Attendance.subject.asc()
     ).all()
 
-    total_classes = sum(
-        record.total_classes
-        for record in attendance_records
-    )
+    attendance_advice = []
 
-    attended_classes = sum(
-        record.attended_classes
-        for record in attendance_records
-    )
-
-    if total_classes > 0:
-        overall_attendance = round(
-            (attended_classes / total_classes) * 100,
-        1
+    for record in attendance_records:
+        advice = calculate_attendance_advice(
+            record.attended_classes,
+            record.total_classes
         )
 
-    else:
+        attendance_advice.append({
+            "subject": record.subject,
+            "attended": record.attended_classes,
+            "total": record.total_classes,
+            "percentage": advice["percentage"],
+            "status": advice["status"],
+            "message": advice["message"]
+        })
 
-        overall_attendance = 0
+        total_classes = sum(
+            record.total_classes
+            for record in attendance_records
+        )
+
+        attended_classes = sum(
+            record.attended_classes
+            for record in attendance_records
+        )
+
+        if total_classes > 0:
+            overall_attendance = round(
+                (attended_classes / total_classes) * 100,
+            1
+            )
+
+        else:
+
+            overall_attendance = 0
 
     return render_template(
         "dashboard.html",
@@ -137,7 +205,8 @@ def dashboard():
         total_study_hours=total_study_hours,
         remaining_minutes=remaining_minutes,
         attendance_records=attendance_records,
-        overall_attendance=overall_attendance
+        overall_attendance=overall_attendance,
+        attendance_advice=attendance_advice
     )
 
 # -------------------------

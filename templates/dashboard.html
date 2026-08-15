@@ -241,6 +241,64 @@
 
     </div>
 
+    <div class="attendance-advisor">
+
+    <h3>Attendance Advisor</h3>
+
+    {% if attendance_advice %}
+
+        {% for advice in attendance_advice %}
+
+            <div class="advisor-item">
+
+                <div>
+
+                    <strong>
+                        {{ advice.subject }}
+                    </strong>
+
+                    <p>
+                        {{ advice.percentage }}%
+                    </p>
+
+                </div>
+
+                <div>
+
+                    {% if advice.status == "At Risk" %}
+
+                        <span class="status-risk">
+                            ⚠️ At Risk
+                        </span>
+
+                    {% else %}
+
+                        <span class="status-safe">
+                            ✓ Safe
+                        </span>
+
+                    {% endif %}
+
+                    <p class="advisor-message">
+                        {{ advice.message }}
+                    </p>
+
+                </div>
+
+            </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <p class="empty-state">
+            Add attendance records to receive advice.
+        </p>
+
+    {% endif %}
+
+    </div>
+
     <div class="study-list">
 
         {% if study_sessions %}

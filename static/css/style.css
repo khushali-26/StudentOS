@@ -581,3 +581,41 @@ footer {
     color: #667085;
     font-size: 13px;
 }
+
+/* ATTENDANCE ADVISOR */
+
+.attendance-advisor {
+    margin-top: 25px;
+    padding-top: 25px;
+    border-top: 1px solid #e8ebf2;
+}
+
+.attendance-advisor h3 {
+    margin-bottom: 15px;
+}
+
+.advisor-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 15px;
+    margin-bottom: 10px;
+    border: 1px solid #e8ebf2;
+    border-radius: 10px;
+}
+
+.advisor-item p {
+    margin-top: 5px;
+    color: #667085;
+    font-size: 13px;
+}
+
+.status-risk,
+.status-safe {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.advisor-message {
+    max-width: 300px;
+}
