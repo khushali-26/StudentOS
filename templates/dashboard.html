@@ -79,17 +79,17 @@
 
 
             <div class="dashboard-card">
-
                 <p>Attendance</p>
-
-                <h2>0%</h2>
+                
+                <h2>
+                    {{ overall_attendance }}%
+                </h2>
 
                 <span>
                     Overall attendance
                 </span>
 
             </div>
-
 
             <div class="dashboard-card">
 
@@ -149,6 +149,96 @@
         </button>
 
     </form>
+    </div>
+
+    <class="large-card">
+
+    <h2>Attendance Tracker</h2>
+
+    <form
+        action="{{ url_for('add_attendance') }}"
+        method="POST"
+        class="attendance-form"
+    >
+
+        <input
+            type="text"
+            name="subject"
+            placeholder="Subject"
+            required
+        >
+
+        <input
+            type="number"
+            name="total_classes"
+            placeholder="Total classes"
+            min="1"
+            required
+        >
+
+        <input
+            type="number"
+            name="attended_classes"
+            placeholder="Classes attended"
+            min="0"
+            required
+        >
+
+        <button
+            type="submit"
+            class="primary-btn"
+        >
+            + Add Attendance
+        </button>
+
+    </form>
+
+
+    <div class="attendance-list">
+
+        {% if attendance_records %}
+
+            {% for record in attendance_records %}
+
+                {% set percentage =
+                    (record.attended_classes /
+                    record.total_classes * 100)
+                    | round(1)
+                %}
+
+                <div class="attendance-item">
+
+                    <div>
+
+                        <strong>
+                            {{ record.subject }}
+                        </strong>
+
+                        <p>
+                            {{ record.attended_classes }}
+                            /
+                            {{ record.total_classes }}
+                            classes
+                        </p>
+
+                    </div>
+
+                    <strong>
+                        {{ percentage }}%
+                    </strong>
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <p class="empty-state">
+                No attendance records yet.
+            </p>
+
+        {% endif %}
+
     </div>
 
     <div class="study-list">

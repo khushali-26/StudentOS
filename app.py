@@ -43,6 +43,30 @@ class StudySession(db.Model):
         default=datetime.utcnow
     )
 
+class Attendance(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    subject = db.Column(
+        db.String(100),
+        nullable=False
+    )
+
+    total_classes = db.Column(
+        db.Integer,
+        nullable=False
+    )
+
+    attended_classes = db.Column(
+        db.Integer,
+        nullable=False
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
+
 # -------------------------
 # Home
 # -------------------------
@@ -81,13 +105,39 @@ def dashboard():
 
     remaining_minutes = total_study_minutes % 60
 
+    attendance_records = Attendance.query.order_by(
+        Attendance.subject.asc()
+    ).all()
+
+    total_classes = sum(
+        record.total_classes
+        for record in attendance_records
+    )
+
+    attended_classes = sum(
+        record.attended_classes
+        for record in attendance_records
+    )
+
+    if total_classes > 0:
+        overall_attendance = round(
+            (attended_classes / total_classes) * 100,
+        1
+        )
+
+    else:
+
+        overall_attendance = 0
+
     return render_template(
         "dashboard.html",
         tasks=tasks,
         study_sessions=study_sessions,
         pending_tasks=pending_tasks,
         total_study_hours=total_study_hours,
-        remaining_minutes=remaining_minutes
+        remaining_minutes=remaining_minutes,
+        attendance_records=attendance_records,
+        overall_attendance=overall_attendance
     )
 
 # -------------------------
@@ -131,6 +181,38 @@ def add_study_session():
         db.session.add(session)
 
         db.session.commit()
+
+    return redirect(url_for("dashboard"))
+
+@app.route("/attendance/add", methods=["POST"])
+def add_attendance():
+
+    subject = request.form.get("subject")
+
+    total_classes = request.form.get("total_classes")
+
+    attended_classes = request.form.get("attended_classes")
+
+    if subject and total_classes and attended_classes:
+
+        total_classes = int(total_classes)
+
+        attended_classes = int(attended_classes)
+
+        if (
+            total_classes > 0
+            and 0 <= attended_classes <= total_classes
+        ):
+
+            attendance = Attendance(
+                subject=subject,
+                total_classes=total_classes,
+                attended_classes=attended_classes
+            )
+
+            db.session.add(attendance)
+
+            db.session.commit()
 
     return redirect(url_for("dashboard"))
 

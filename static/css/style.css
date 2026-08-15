@@ -535,3 +535,49 @@ footer {
     color: #667085;
     font-size: 13px;
 }
+
+/* ATTENDANCE */
+
+.attendance-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 25px;
+}
+
+.attendance-form input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #d9dde7;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+}
+
+.attendance-form input:focus {
+    border-color: #667085;
+}
+
+.attendance-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.attendance-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 15px;
+
+    border: 1px solid #e8ebf2;
+    border-radius: 10px;
+}
+
+.attendance-item p {
+    margin-top: 4px;
+    color: #667085;
+    font-size: 13px;
+}
