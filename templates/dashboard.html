@@ -95,7 +95,7 @@
 
                 <p>Goals</p>
 
-                <h2>0</h2>
+                <h2>{{ active_goals }}</h2>
 
                 <span>
                     Active goals
@@ -105,360 +105,553 @@
 
         </section>
 
-
         <section class="dashboard-main">
 
-           <class="large-card">
-
-    <div class="section-header">
-
-        <h2>Tasks</h2>
-
-    </div>
+    <!-- ================= TASKS ================= -->
 
     <div class="large-card">
 
-    <h2>Study Tracker</h2>
+        <div class="section-header">
+            <h2>📝 Tasks</h2>
+        </div>
 
-    <form
-        action="{{ url_for('add_study_session') }}"
-        method="POST"
-        class="study-form"
-    >
+        <!-- Add Task Form -->
 
-        <input
-            type="text"
-            name="subject"
-            placeholder="Subject"
-            required
+        <form
+            action="{{ url_for('add_task') }}"
+            method="POST"
+            class="task-form"
         >
 
-        <input
-            type="number"
-            name="duration"
-            placeholder="Duration in minutes"
-            min="1"
-            required
-        >
+            <input
+                type="text"
+                name="title"
+                placeholder="Enter task title..."
+                required
+            >
 
-        <button
-            type="submit"
-            class="primary-btn"
-        >
-            + Add Study Session
-        </button>
+            <textarea
+                name="description"
+                placeholder="Description (optional)"
+            ></textarea>
 
-    </form>
-    </div>
+            <button
+                type="submit"
+                class="primary-btn"
+            >
+                + Add Task
+            </button>
 
-    <class="large-card">
-
-    <h2>Attendance Tracker</h2>
-
-    <form
-        action="{{ url_for('add_attendance') }}"
-        method="POST"
-        class="attendance-form"
-    >
-
-        <input
-            type="text"
-            name="subject"
-            placeholder="Subject"
-            required
-        >
-
-        <input
-            type="number"
-            name="total_classes"
-            placeholder="Total classes"
-            min="1"
-            required
-        >
-
-        <input
-            type="number"
-            name="attended_classes"
-            placeholder="Classes attended"
-            min="0"
-            required
-        >
-
-        <button
-            type="submit"
-            class="primary-btn"
-        >
-            + Add Attendance
-        </button>
-
-    </form>
+        </form>
 
 
-    <div class="attendance-list">
+        <!-- Task List -->
 
-        {% if attendance_records %}
+        <div class="task-list">
 
-            {% for record in attendance_records %}
+            {% if tasks %}
 
-                {% set percentage =
-                    (record.attended_classes /
-                    record.total_classes * 100)
-                    | round(1)
-                %}
+                {% for task in tasks %}
 
-                <div class="attendance-item">
+                    <div
+                        class="task-item
+                        {% if task.completed %}
+                            completed
+                        {% endif %}"
+                    >
 
-                    <div>
+                        <div class="task-info">
 
-                        <strong>
-                            {{ record.subject }}
-                        </strong>
+                            <h3>
+                                {{ task.title }}
+                            </h3>
 
-                        <p>
-                            {{ record.attended_classes }}
-                            /
-                            {{ record.total_classes }}
-                            classes
-                        </p>
+                            {% if task.description %}
+
+                                <p>
+                                    {{ task.description }}
+                                </p>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="task-actions">
+
+                            <a
+                                href="{{ url_for(
+                                    'complete_task',
+                                    task_id=task.id
+                                ) }}"
+                                class="task-complete"
+                            >
+
+                                {% if task.completed %}
+                                    Undo
+                                {% else %}
+                                    Complete
+                                {% endif %}
+
+                            </a>
+
+
+                            <a
+                                href="{{ url_for(
+                                    'delete_task',
+                                    task_id=task.id
+                                ) }}"
+                                class="task-delete"
+                            >
+                                Delete
+                            </a>
+
+                        </div>
 
                     </div>
 
-                    <strong>
-                        {{ percentage }}%
-                    </strong>
+                {% endfor %}
 
-                </div>
+            {% else %}
 
-            {% endfor %}
+                <p class="empty-state">
+                    No tasks yet. Add your first task!
+                </p>
 
-        {% else %}
+            {% endif %}
 
-            <p class="empty-state">
-                No attendance records yet.
-            </p>
-
-        {% endif %}
+        </div>
 
     </div>
 
-    <div class="attendance-advisor">
 
-    <h3>Attendance Advisor</h3>
+    <!-- ================= STUDY TRACKER ================= -->
 
-    {% if attendance_advice %}
+    <div class="large-card">
 
-        {% for advice in attendance_advice %}
+        <h2>📚 Study Tracker</h2>
 
-            <div class="advisor-item">
-
-                <div>
-
-                    <strong>
-                        {{ advice.subject }}
-                    </strong>
-
-                    <p>
-                        {{ advice.percentage }}%
-                    </p>
-
-                </div>
-
-                <div>
-
-                    {% if advice.status == "At Risk" %}
-
-                        <span class="status-risk">
-                            ⚠️ At Risk
-                        </span>
-
-                    {% else %}
-
-                        <span class="status-safe">
-                            ✓ Safe
-                        </span>
-
-                    {% endif %}
-
-                    <p class="advisor-message">
-                        {{ advice.message }}
-                    </p>
-
-                </div>
-
-            </div>
-
-        {% endfor %}
-
-    {% else %}
-
-        <p class="empty-state">
-            Add attendance records to receive advice.
-        </p>
-
-    {% endif %}
-
-    </div>
-
-    <div class="study-list">
-
-        {% if study_sessions %}
-
-            {% for session in study_sessions %}
-
-                <div class="study-item">
-
-                    <div>
-                        <strong>
-                            {{ session.subject }}
-                        </strong>
-
-                        <p>
-                            {{ session.duration }} minutes
-                        </p>
-                    </div>
-
-                    <span>
-                        📚
-                    </span>
-
-                </div>
-
-            {% endfor %}
-
-        {% else %}
-
-            <p class="empty-state">
-                No study sessions yet.
-            </p>
-
-        {% endif %}
-
-    </div>
-
-    <!-- Add Task Form -->
-
-    <form
-        action="{{ url_for('add_task') }}"
-        method="POST"
-        class="task-form"
-    >
-
-        <input
-            type="text"
-            name="title"
-            placeholder="Enter task title..."
-            required
+        <form
+            action="{{ url_for('add_study_session') }}"
+            method="POST"
+            class="study-form"
         >
 
-        <textarea
-            name="description"
-            placeholder="Description (optional)"
-        ></textarea>
+            <input
+                type="text"
+                name="subject"
+                placeholder="Subject"
+                required
+            >
 
-        <button
-            type="submit"
-            class="primary-btn"
-        >
-            + Add Task
-        </button>
+            <input
+                type="number"
+                name="duration"
+                placeholder="Duration in minutes"
+                min="1"
+                required
+            >
 
-    </form>
+            <button
+                type="submit"
+                class="primary-btn"
+            >
+                + Add Study Session
+            </button>
+
+        </form>
 
 
-    <!-- Task List -->
+        <!-- Study Session Data -->
 
-    <div class="task-list">
+        <div class="study-list">
 
-        {% if tasks %}
+            {% if study_sessions %}
 
-            {% for task in tasks %}
+                {% for session in study_sessions %}
 
-                <div
-                    class="task-item
-                    {% if task.completed %}
-                        completed
-                    {% endif %}"
-                >
+                    <div class="study-item">
 
-                    <div class="task-info">
+                        <div>
 
-                        <h3>
-                            {{ task.title }}
-                        </h3>
-
-                        {% if task.description %}
+                            <strong>
+                                {{ session.subject }}
+                            </strong>
 
                             <p>
-                                {{ task.description }}
+                                {{ session.duration }} minutes
                             </p>
 
-                        {% endif %}
+                        </div>
+
+                        <span>
+                            📚
+                        </span>
 
                     </div>
 
+                {% endfor %}
 
-                    <div class="task-actions">
+            {% else %}
 
-                        <a
-                            href="{{ url_for(
-                                'complete_task',
-                                task_id=task.id
-                            ) }}"
-                            class="task-complete"
-                        >
-                            {% if task.completed %}
-                                Undo
+                <p class="empty-state">
+                    No study sessions yet.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= ATTENDANCE ================= -->
+
+    <div class="large-card">
+
+        <h2>🎓 Attendance Tracker</h2>
+
+        <form
+            action="{{ url_for('add_attendance') }}"
+            method="POST"
+            class="attendance-form"
+        >
+
+            <input
+                type="text"
+                name="subject"
+                placeholder="Subject"
+                required
+            >
+
+            <input
+                type="number"
+                name="total_classes"
+                placeholder="Total classes"
+                min="1"
+                required
+            >
+
+            <input
+                type="number"
+                name="attended_classes"
+                placeholder="Classes attended"
+                min="0"
+                required
+            >
+
+            <button
+                type="submit"
+                class="primary-btn"
+            >
+                + Add Attendance
+            </button>
+
+        </form>
+
+
+        <!-- Attendance Data -->
+
+        <div class="attendance-list">
+
+            {% if attendance_records %}
+
+                {% for record in attendance_records %}
+
+                    {% set percentage =
+                        (record.attended_classes /
+                        record.total_classes * 100)
+                        | round(1)
+                    %}
+
+                    <div class="attendance-item">
+
+                        <div>
+
+                            <strong>
+                                {{ record.subject }}
+                            </strong>
+
+                            <p>
+                                {{ record.attended_classes }}
+                                /
+                                {{ record.total_classes }}
+                                classes
+                            </p>
+
+                        </div>
+
+                        <strong>
+                            {{ percentage }}%
+                        </strong>
+
+                    </div>
+
+                {% endfor %}
+
+            {% else %}
+
+                <p class="empty-state">
+                    No attendance records yet.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- Attendance Advisor -->
+
+        <div class="attendance-advisor">
+
+            <h3>Attendance Advisor</h3>
+
+            {% if attendance_advice %}
+
+                {% for advice in attendance_advice %}
+
+                    <div class="advisor-item">
+
+                        <div>
+
+                            <strong>
+                                {{ advice.subject }}
+                            </strong>
+
+                            <p>
+                                {{ advice.percentage }}%
+                            </p>
+
+                        </div>
+
+
+                        <div>
+
+                            {% if advice.status == "At Risk" %}
+
+                                <span class="status-risk">
+                                    ⚠️ At Risk
+                                </span>
+
                             {% else %}
-                                Complete
-                            {% endif %}
-                        </a>
 
+                                <span class="status-safe">
+                                    ✓ Safe
+                                </span>
+
+                            {% endif %}
+
+                            <p class="advisor-message">
+                                {{ advice.message }}
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            {% else %}
+
+                <p class="empty-state">
+                    Add attendance records to receive advice.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= GOALS ================= -->
+
+    <div class="large-card">
+
+        <h2>🎯 Goals</h2>
+
+        <form
+            action="{{ url_for('add_goal') }}"
+            method="POST"
+            class="goal-form"
+        >
+
+            <input
+                type="text"
+                name="title"
+                placeholder="Goal title"
+                required
+            >
+
+            <input
+                type="number"
+                name="target"
+                placeholder="Target"
+                min="1"
+                required
+            >
+
+            <input
+                type="number"
+                name="progress"
+                placeholder="Current progress"
+                min="0"
+                required
+            >
+
+            <button
+                type="submit"
+                class="primary-btn"
+            >
+                + Add Goal
+            </button>
+
+        </form>
+
+
+        <!-- Goal Data -->
+
+        <div class="goal-list">
+
+            {% if goals %}
+
+                {% for goal in goals %}
+
+                    {% set percentage =
+                        (goal.progress / goal.target * 100)
+                        | round(1)
+                    %}
+
+                    <div class="goal-item">
+
+                        <div class="goal-header">
+
+                            <strong>
+                                {{ goal.title }}
+                            </strong>
+
+                            <span>
+                                {{ percentage }}%
+                            </span>
+
+                        </div>
+
+
+                        <div class="progress-bar">
+
+                            <div
+                                class="progress-fill"
+                                data-width="{{ percentage }}"
+                            ></div>
+
+                        </div>
+
+
+                        <p class="goal-progress-text">
+
+                            {{ goal.progress }}
+                            /
+                            {{ goal.target }}
+
+                            {% if goal.completed %}
+                                — Completed ✓
+                            {% endif %}
+
+                        </p>
+
+
+                        <!-- Update Goal -->
+
+                        <form
+                            action="{{ url_for(
+                                'update_goal',
+                                goal_id=goal.id
+                            ) }}"
+                            method="POST"
+                            class="goal-update-form"
+                        >
+
+                            <input
+                                type="number"
+                                name="progress"
+                                value="{{ goal.progress }}"
+                                min="0"
+                                max="{{ goal.target }}"
+                                required
+                            >
+
+                            <button type="submit">
+                                Update
+                            </button>
+
+                        </form>
+
+
+                        <!-- Delete Goal -->
 
                         <a
                             href="{{ url_for(
-                                'delete_task',
-                                task_id=task.id
+                                'delete_goal',
+                                goal_id=goal.id
                             ) }}"
-                            class="task-delete"
+                            class="goal-delete"
                         >
                             Delete
                         </a>
 
                     </div>
 
-                </div>
+                {% endfor %}
 
-            {% endfor %}
+            {% else %}
 
-        {% else %}
+                <p class="empty-state">
+                    No goals yet. Add your first goal!
+                </p>
 
-            <p class="empty-state">
-                No tasks yet. Add your first task!
-            </p>
+            {% endif %}
 
-        {% endif %}
+        </div>
 
     </div>
 
-            <div class="large-card">
 
-                <h2>
-                    Weekly Progress
-                </h2>
+    <!-- ================= WEEKLY PROGRESS ================= -->
 
-                <div class="big-progress">
-                    <div class="big-progress-fill"></div>
-                </div>
+    <div class="large-card">
 
-                <p class="empty-state">
-                    Start completing tasks to track your progress.
-                </p>
+        <h2>📈 Weekly Progress</h2>
 
-            </div>
+        <div class="big-progress">
+
+            <div class="big-progress-fill"></div>
+
+        </div>
+
+        <p class="empty-state">
+            Start completing tasks to track your progress.
+        </p>
+
+    </div>
 
         </section>
 
+
     </main>
+
+    <script>
+
+    document
+        .querySelectorAll(".progress-fill")
+        .forEach(function(bar) {
+
+            const percentage = bar.dataset.width;
+
+            bar.style.width = percentage + "%";
+
+        });
+
+    </script>
 
 
     <footer>

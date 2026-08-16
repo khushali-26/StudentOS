@@ -117,6 +117,35 @@ def calculate_attendance_advice(attended, total, required=75):
                 f"class(es) and remain at or above {required}%."
             )
         }
+
+class Goal(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    title = db.Column(
+        db.String(200),
+        nullable=False
+    )
+
+    target = db.Column(
+        db.Integer,
+        nullable=False
+    )
+
+    progress = db.Column(
+        db.Integer,
+        default=0
+    )
+
+    completed = db.Column(
+        db.Boolean,
+        default=False
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
     
 # -------------------------
 # Home
@@ -197,6 +226,14 @@ def dashboard():
 
             overall_attendance = 0
 
+    goals = Goal.query.order_by(
+        Goal.created_at.desc()
+    ).all()
+
+    active_goals = Goal.query.filter_by(
+        completed=False
+    ).count()
+
     return render_template(
         "dashboard.html",
         tasks=tasks,
@@ -206,7 +243,9 @@ def dashboard():
         remaining_minutes=remaining_minutes,
         attendance_records=attendance_records,
         overall_attendance=overall_attendance,
-        attendance_advice=attendance_advice
+        attendance_advice=attendance_advice,
+        goals=goals,
+        active_goals=active_goals
     )
 
 # -------------------------
@@ -282,6 +321,69 @@ def add_attendance():
             db.session.add(attendance)
 
             db.session.commit()
+
+    return redirect(url_for("dashboard"))
+
+@app.route("/goal/add", methods=["POST"])
+def add_goal():
+
+    title = request.form.get("title")
+    target = request.form.get("target")
+    progress = request.form.get("progress")
+
+    if title and target:
+
+        target = int(target)
+
+        progress = int(progress or 0)
+
+        if target > 0 and 0 <= progress <= target:
+
+            goal = Goal(
+                title=title,
+                target=target,
+                progress=progress,
+                completed=(progress == target)
+            )
+
+            db.session.add(goal)
+
+            db.session.commit()
+
+    return redirect(url_for("dashboard"))
+
+@app.route("/goal/<int:goal_id>/update", methods=["POST"])
+def update_goal(goal_id):
+
+    goal = Goal.query.get_or_404(goal_id)
+
+    progress = request.form.get("progress")
+
+    if progress:
+
+        progress = int(progress)
+
+        if 0 <= progress <= goal.target:
+
+            goal.progress = progress
+
+            if progress == goal.target:
+                goal.completed = True
+            else:
+                goal.completed = False
+
+            db.session.commit()
+
+    return redirect(url_for("dashboard"))
+
+@app.route("/goal/<int:goal_id>/delete")
+def delete_goal(goal_id):
+
+    goal = Goal.query.get_or_404(goal_id)
+
+    db.session.delete(goal)
+
+    db.session.commit()
 
     return redirect(url_for("dashboard"))
 
